@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script>
+
+//获取元素距离html的left和top;
+//调用方式 getOffset(ele).x;getOffset(ele).y;
+	function getOffset(ele) {
+		var ele = ele,
+			flg = false,
+			x = ele.offsetLeft,
+			y = ele.offsetTop;
+		if (ele.offsetparent) {
+			ele = ele.offsetparent;
+			x += ele.offsetLeft
+			y += ele.offsetTop
+		}
+		return {
+			x: x,
+			y: y
+		}
+	};
+
+
+	</script>
+</body>
+</html>
