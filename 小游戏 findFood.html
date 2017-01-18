@@ -43,8 +43,7 @@
 	<div class="food"></div>
 </main>	
 </body>
-<script src="jquery.js"></script>
-<script src="../util/util.js"></script>
+
 <script>
 /**
  *键盘上下左右触发dom移动;
@@ -91,43 +90,60 @@ var keyDomMove = (function() {
 		time: {},
 	};
 
-	return function(dom, speed) {
+	return function(dom, main, speed) {
 		if (typeof speed != "number") {
 			speed = 1;
 		} else {
-			speed = (speed / 50) > 1 ? (speed / 50) : 1
+			speed = (speed/60) > 1 ? (speed/60) : 1
 		}
 		var left = parseInt(window.getComputedStyle(dom).marginLeft),
-			top = parseInt(window.getComputedStyle(dom).marginTop);
+			top = parseInt(window.getComputedStyle(dom).marginTop),
+			mainHeigeht=parseInt(window.getComputedStyle(main).height)-20,
+			mainWidth=parseInt(window.getComputedStyle(main).width)-20,
+			changeXY=function(xy,min,max){
+				if(xy<min){
+					xy=max;
+				}else if(xy>=max){
+					xy=min;
+				}
+				return xy;
+			};
 
 		document.addEventListener("keydown", function(e) {
 			keyCode.downKeyCode();
 			if (keyCode[37] && !keyCode.time[37]) {
 				keyCode.time[e.keyCode] = setInterval(function() {
-					dom.style.left = dom.offsetLeft - left - speed + "px";
+					var x= dom.offsetLeft - left - speed ;
+					x=changeXY(x,0,mainWidth);
+					dom.style.left =x+"px";
 					start()
-				}, 20)
+				}, 50/3)
 
 			};
 			if (keyCode[38] && !keyCode.time[38]) {
 				keyCode.time[e.keyCode] = setInterval(function() {
-					dom.style.top = dom.offsetTop - top - speed + "px";
+					var y = dom.offsetTop - top - speed 
+					y=changeXY(y,0,mainHeigeht);
+					dom.style.top=y+"px";
 					start()
-				}, 20)
+				}, 50/3)
 
 			};
 			if (keyCode[39] && !keyCode.time[39]) {
 				keyCode.time[e.keyCode] = setInterval(function() {
-					dom.style.left = dom.offsetLeft - left + speed + "px";
-					start()
-				}, 20)
+					var x= dom.offsetLeft - left + speed ;
+					x=changeXY(x,0,mainWidth);
+					dom.style.left =x+"px";
+				}, 50/3)
 
 			};
 			if (keyCode[40] && !keyCode.time[40]) {
 				keyCode.time[e.keyCode] = setInterval(function() {
-					dom.style.top = dom.offsetTop - top + speed + "px";
+					var y = dom.offsetTop - top + speed ;
+					y=changeXY(y,0,mainHeigeht);
+					dom.style.top=y+"px";
 					start()
-				}, 20)
+				}, 50/3)
 
 			};
 			document.addEventListener("keyup", function(e) {
@@ -142,7 +158,7 @@ var keyDomMove = (function() {
 
 function init() {
 	foodInit(food);
-	keyDomMove(box, 300);
+	keyDomMove(box, document.body,300);
 }
 init()
 </script>
