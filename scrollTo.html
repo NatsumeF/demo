@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		#top{
+			position: fixed;
+			right: 40px;
+			bottom: 40px;
+		}
+		*{
+			scroll-behavior: smooth;
+		}
+	</style>
+</head>
+<body>
+<a href="#oneZore">dianji</a>
+	<div id="oneZore">103</div>
+	<a href="#" id="top">XXX</a>
+</body>
+<script>
+"use strict"
+function addBr(num,dom){
+	for(let i= num;i>=0;i--){
+		var br= document.createElement("br");
+		if(!dom){
+			document.body.appendChild(br);
+		}else {
+			document.body.insertBefore(br,dom);
+		}
+	}
+}
+addBr(100,document.getElementsByTagName("div")[0])
+addBr(50);
+
+
+function animetionScroll(time,dom){
+	time = time/1000 || 2;
+	function show(dom, time) {
+		var y,
+			target=document.getElementById(dom.getAttribute("href").slice(1))||"body";
+		if(target==="body"){
+			y = 0;
+		}else{
+			y = target.offsetTop;
+		};
+		var _y = (y - document.body.scrollTop) / (time * 60),
+			top = document.body.scrollTop,
+			time = setInterval(function() {
+				top += _y;
+				if( (_y>0&&top >= y)||(_y<0&&top<=y) ){
+					top=y;
+					clearInterval(time);
+				}
+				window.scroll(0, top);
+			}, 1000 / 60)
+	};
+	if(!dom){
+		var $Link=document.querySelectorAll("a[href^='#']"),
+			arr=[].slice.call($Link);
+		arr.forEach(function(item,index){
+				item.addEventListener("click",function(e){
+					e.preventDefault();
+					show(item,time)
+				})
+		})
+	}else{
+		dom.addEventListener("click",function(e){
+			e.preventDefault();
+			show(dom,time)
+		})
+	}
+}
+animetionScroll(400)
+</script>
+</html>
