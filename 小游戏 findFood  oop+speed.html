@@ -36,7 +36,11 @@
 		border-radius: 50%;
 		position: absolute;
 	}
-
+	#food-speed {
+		position: absolute;
+		left: 50px;
+		top: 50px;
+	}
 	footer span{
 		position: absolute;
 		bottom: 20px;
@@ -47,6 +51,10 @@
 
 </head>
 <body>
+<div id="food-speed">
+	速度
+	<input type="text" value="200" class="food-speed">
+</div>
 <main>
 	<div class="lookFood">获取了<span>0</span>个food</div>
 	<div class="box"></div>
@@ -91,103 +99,116 @@ function start() {
  *speed 每秒移动速度;
  *callback 每次执行触发的函数;
  */
-var keyDomMove = (function() {
+var KeyDomMove = function(dom, main, speed, callback) {
 	//通过闭包保存变量
-	var keyCode = {
+	this.keyCode = {
 		//每次按下上下左右的将当前按下的方向保存 为ture;
 		downKeyCode: function(e) {
 			var e = e || window.event;
 			//只需要用到上下左右 只保存4个键值;
 			if (e.keyCode === 37 || e.keyCode === 38 || e.keyCode === 39 || e.keyCode === 40) {
-				keyCode[e.keyCode] = true;
+				this.keyCode[e.keyCode] = true;
 			}
-		},
+		}.bind(this),
 		//每次弹起上下左右的将当前弹起的方向修改为flase;
 		upKeyCode: function(e) {
 			var e = e || window.event;
-			if (keyCode[e.keyCode]) {
-				keyCode[e.keyCode] = false;
+			if (this.keyCode[e.keyCode]) {
+				this.keyCode[e.keyCode] = false;
 			}
-		},
+		}.bind(this),
 		//用于保存当前的setInterval;通过定时器增强小球移动的连贯性;
 		time: {},
 	};
-	return function(dom, main, speed,callback) {
-		if (typeof speed != "number") {
-			speed = 1;
-		} else {
-			//速度必须大于60px每秒;每次移动的像素小于1px 浏览器会修正为0px;这也是因为运用了定时器的缺点;
-			//除以60是因为浏览器播放动画每秒60帧可以保持动画的流畅性;
-			speed = (speed/60) > 1 ? (speed/60) : 1
-		}
-		var left = parseInt(window.getComputedStyle(dom).marginLeft),
-			top = parseInt(window.getComputedStyle(dom).marginTop),
-			mainHeigeht=parseInt(window.getComputedStyle(main).height)-20,
-			mainWidth=parseInt(window.getComputedStyle(main).width)-20,
-			//用于左右 和上下穿透;
-			changeXY=function(xy,min,max){
-				if(xy<min){
-					xy=max;
-				}else if(xy>=max){
-					xy=min;
-				}
-				return xy;
-			};
-
-		document.addEventListener("keydown", function(e) {
-			keyCode.downKeyCode();
-			console.log(speed)
-			if (keyCode[37] && !keyCode.time[37]) {
-				keyCode.time[e.keyCode] = setInterval(function() {
-					var x= dom.offsetLeft - left - speed ;
-					x=changeXY(x,0,mainWidth);
-					dom.style.left =x+"px";
-					callback&&callback();
-				}, 50/3)
-
-			};
-			if (keyCode[38] && !keyCode.time[38]) {
-				keyCode.time[e.keyCode] = setInterval(function() {
-					var y = dom.offsetTop - top - speed 
-					y=changeXY(y,0,mainHeigeht);
-					dom.style.top=y+"px";
-					callback&&callback();
-				}, 50/3)
-
-			};
-			if (keyCode[39] && !keyCode.time[39]) {
-				keyCode.time[e.keyCode] = setInterval(function() {
-					var x= dom.offsetLeft - left + speed ;
-					x=changeXY(x,0,mainWidth);
-					dom.style.left =x+"px";
-					callback&&callback();
-				}, 50/3)
-
-			};
-			if (keyCode[40] && !keyCode.time[40]) {
-				keyCode.time[e.keyCode] = setInterval(function() {
-					var y = dom.offsetTop - top + speed ;
-					y=changeXY(y,0,mainHeigeht);
-					dom.style.top=y+"px";
-					callback&&callback();
-				}, 50/3)
-
-			};
-			//每次弹起按键 移除当前方向的定时器 ;
-			document.addEventListener("keyup", function(e) {
-				keyCode.upKeyCode();
-				clearInterval(keyCode.time[e.keyCode]);
-				keyCode.time[e.keyCode] = null;
-			})
-		})
-
+	this.speed = speed;
+	this.dom = dom;
+	this.main = main;
+	this.callback = callback;
+	this.init()
+}
+KeyDomMove.prototype.init = function() {
+	if (typeof this.speed != "number") {
+		this.speed = 1;
+	} else {
+		//速度必须大于60px每秒;每次移动的像素小于1px 浏览器会修正为0px;这也是因为运用了定时器的缺点;
+		//除以60是因为浏览器播放动画每秒60帧可以保持动画的流畅性;
+		this.speed = (this.speed / 60) > 1 ? (this.speed / 60) : 1;
 	}
+	var left = parseInt(window.getComputedStyle(this.dom).marginLeft),
+		top = parseInt(window.getComputedStyle(this.dom).marginTop),
+		mainHeigeht = parseInt(window.getComputedStyle(this.main).height) - 20,
+		mainWidth = parseInt(window.getComputedStyle(this.main).width) - 20,
+		me = this,
+		//用于左右 和上下穿透;
+		changeXY = function(xy, min, max) {
+			if (xy < min) {
+				xy = max;
+			} else if (xy >= max) {
+				xy = min;
+			}
+			return xy;
+		};
 
-})()
+	document.addEventListener("keydown", function(e) {
+		me.keyCode.downKeyCode();
+		if (me.keyCode[37] && !me.keyCode.time[37]) {
+			me.keyCode.time[e.keyCode] = setInterval(function() {
+				var x = me.dom.offsetLeft - left - me.speed;
+				//console.log(x)
+				x = changeXY(x, 0, mainWidth);
+				me.dom.style.left = x + "px";
+				me.callback && me.callback();
+			}, 50 / 3)
+
+		};
+		if (me.keyCode[38] && !me.keyCode.time[38]) {
+			me.keyCode.time[e.keyCode] = setInterval(function() {
+				var y = me.dom.offsetTop - top - me.speed
+				y = changeXY(y, 0, mainHeigeht);
+				me.dom.style.top = y + "px";
+				me.callback && me.callback();
+			}, 50 / 3)
+
+		};
+		if (me.keyCode[39] && !me.keyCode.time[39]) {
+			me.keyCode.time[e.keyCode] = setInterval(function() {
+				var x = me.dom.offsetLeft - left + me.speed;
+				x = changeXY(x, 0, mainWidth);
+				me.dom.style.left = x + "px";
+				me.callback && me.callback();
+			}, 50 / 3)
+
+		};
+		if (me.keyCode[40] && !me.keyCode.time[40]) {
+			me.keyCode.time[e.keyCode] = setInterval(function() {
+				var y = me.dom.offsetTop - top + me.speed;
+				y = changeXY(y, 0, mainHeigeht);
+				me.dom.style.top = y + "px";
+				me.callback && me.callback();
+			}, 50 / 3)
+
+		};
+		//每次弹起按键 移除当前方向的定时器 ;
+		document.addEventListener("keyup", function(e) {
+			me.keyCode.upKeyCode();
+			clearInterval(me.keyCode.time[e.keyCode]);
+			me.keyCode.time[e.keyCode] = null;
+		})
+	})
+};
+KeyDomMove.prototype.changeSpeed = function(speed) {
+	this.speed = (speed / 60) > 1 ? (speed / 60) : 1;
+};
 
 function init() {
+	var speed = document.querySelector(".food-speed"),
+		speedValue = parseInt(speed.value);
 	foodInit(food);
-	keyDomMove(box, document.body,500,start);
+	var findFood = new KeyDomMove(box, document.body, speedValue, start);
+	speed.onblur = function() {
+		speedValue = parseInt(speed.value);
+		findFood.changeSpeed(speedValue);
+	}
 }
 init()
 
