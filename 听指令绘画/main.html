@@ -41,7 +41,10 @@
 			background:url(robot_.png) no-repeat ; 
 			background-size: cover;
 			transform: rotate(0deg);
-			transition-duration:  500ms;
+			transition-duration: transform 500ms;
+		}
+		.map-color{
+			background: red;
 		}
 	</style>
 	<link rel="stylesheet" href="reset.css">
@@ -82,11 +85,8 @@ table.innerHTML=html;
 "use strict"
 var BoxRobot = function() {
 	this.robot = document.querySelector(".my-robot");
-	this.init();
+	this.map = document.querySelector(".main-map");
 }
-BoxRobot.prototype.init = function() {
-
-};
 //旋转
 BoxRobot.prototype.rotate = function(direction) {
 		var deg = {
@@ -141,6 +141,7 @@ BoxRobot.prototype.getNowDirection = function() {
 	var deg = this.getNowDeg() % 360;
 	return deg > 0 ? deg : deg + 360;
 }
+//获取当前偏移的位置
 BoxRobot.prototype.getNowLocat = function() {
 		var width = parseInt(window.getComputedStyle(this.robot).width);
 		return [
@@ -154,7 +155,7 @@ BoxRobot.prototype.getPosition = function() {
 			top = parseInt(window.getComputedStyle(this.robot).top);
 		return [top, left]
 	}
-	//机器人移动 
+	//机器人位移的方向 
 BoxRobot.prototype.getMoveDerection = function(derection) {
 	//[top,left]
 	var moveDerection = {
@@ -165,31 +166,53 @@ BoxRobot.prototype.getMoveDerection = function(derection) {
 	}[derection];
 	return moveDerection;
 }
+//机器人移动
 BoxRobot.prototype.move = function(direction, footstep) {
 	var size = parseInt(window.getComputedStyle(this.robot).width),
 		position = this.getPosition();
 	if ((this.getNowDirection() + 180) % 360 !== direction) {
 		this.rotate(direction);
-		return 
+		return ;
 	}
-	this.robot.style.top = position[0] + this.getMoveDerection(direction)[0] * footstep * size + "px";
-	this.robot.style.left = position[1] + this.getMoveDerection(direction)[1] * footstep * size + "px";
+	var top =  position[0] + this.getMoveDerection(direction)[0] * footstep * size,
+		left=  position[1] + this.getMoveDerection(direction)[1] * footstep * size;
+
+	if(top>parseInt(window.getComputedStyle(this.map).width)- parseInt(window.getComputedStyle(this.robot).width)){
+		top=parseInt(window.getComputedStyle(this.map).width)- parseInt(window.getComputedStyle(this.robot).width);
+	}else if (top< parseInt(window.getComputedStyle(this.robot).width)){
+		top =  parseInt(window.getComputedStyle(this.robot).width);
+	}
+	if(left>parseInt(window.getComputedStyle(this.map).height)- parseInt(window.getComputedStyle(this.robot).width)){
+		left=parseInt(window.getComputedStyle(this.map).height)- parseInt(window.getComputedStyle(this.robot).width);
+	}else if (left< parseInt(window.getComputedStyle(this.robot).width)){
+		left=  parseInt(window.getComputedStyle(this.robot).width);
+	}
+	this.robot.style.top =top + "px";
+	this.robot.style.left = left + "px";
 }
+
+
 var box = new BoxRobot();
 
 window.addEventListener("keydown", function(e) {
 	if (e.keyCode === 37) {
-		e.preventDefault()
-		box.move(270, 1)
+		e.preventDefault();
+		box.move(270, 1);
 	} else if (e.keyCode === 38) {
-		e.preventDefault()
-		box.move(0, 1)
+		e.preventDefault();
+		box.move(0, 1);
 	} else if (e.keyCode === 39) {
-		e.preventDefault()
-		box.move(90, 1)
+		e.preventDefault();
+		box.move(90, 1);
 	} else if (e.keyCode === 40) {
-		e.preventDefault()
-		box.move(180, 1)
+		e.preventDefault();
+		box.move(180, 1);
+	} else if (e.keyCode === 32) {
+		e.preventDefault();
+		var lpcat = box.getNowLocat(),
+			addColor = document.getElementsByTagName("tr")[lpcat[0]],
+			addColorBox=addColor.getElementsByTagName("td")[lpcat[1]];
+		addColorBox.classList.toggle("map-color");
 	}
 })
 
